@@ -14,27 +14,12 @@ use std::str::FromStr;
 
 use structopt::StructOpt;
 
-#[derive(Debug, Deserialize, Serialize)]
-struct Range {
-    start: u64,
-    end: u64,
-}
-
-impl FromStr for Range {
-    type Err = ParseIntError;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let vals: Vec<&str> = s.split("-").collect();
-        Ok(Range {
-            start: vals[0].parse::<u64>()?,
-            end: vals[1].parse::<u64>()?,
-        })
+fn main() {
+    let spec = Command::from_args();
+    match spec {
+        Command::Split { path, ranges } => split(path, ranges),
+        Command::Combine { spec } => combine(spec),
     }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Spec {
-    pub path: String,
-    pub ranges: Vec<Range>,
 }
 
 #[derive(StructOpt, Debug, Serialize)]
@@ -75,29 +60,6 @@ fn split(path: String, ranges: Vec<Range>) {
     }
 
     eprintln!("done");
-}
-
-#[derive(Debug)]
-enum Provenance {
-    Old(Range),
-    New(usize, Range),
-}
-
-const CHUNK_SIZE: usize = 16 * 1024 * 1024;
-
-fn resize_buffer(buf: &mut Vec<u8>, new_size: usize) {
-    let buf_len = buf.len();
-    if buf_len < new_size {
-        buf.extend(iter::repeat(0).take(new_size - buf_len));
-    } else if buf_len > new_size {
-        buf.truncate(new_size);
-    }
-}
-
-fn set_file_name(s: &mut String, orig: &str, idx: usize) {
-    s.clear();
-    s.push_str(orig);
-    s.push_str(&format!(".part.{}", idx));
 }
 
 fn combine(spec_file_name: String) {
@@ -167,10 +129,48 @@ fn combine(spec_file_name: String) {
     eprintln!("done");
 }
 
-fn main() {
-    let spec = Command::from_args();
-    match spec {
-        Command::Split { path, ranges } => split(path, ranges),
-        Command::Combine { spec } => combine(spec),
+fn resize_buffer(buf: &mut Vec<u8>, new_size: usize) {
+    let buf_len = buf.len();
+    if buf_len < new_size {
+        buf.extend(iter::repeat(0).take(new_size - buf_len));
+    } else if buf_len > new_size {
+        buf.truncate(new_size);
+    }
+}
+
+fn set_file_name(s: &mut String, orig: &str, idx: usize) {
+    s.clear();
+    s.push_str(orig);
+    s.push_str(&format!(".part.{}", idx));
+}
+
+#[derive(Debug)]
+enum Provenance {
+    Old(Range),
+    New(usize, Range),
+}
+
+const CHUNK_SIZE: usize = 16 * 1024 * 1024;
+
+#[derive(Debug, Serialize, Deserialize)]
+struct Spec {
+    pub path: String,
+    pub ranges: Vec<Range>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Range {
+    start: u64,
+    end: u64,
+}
+
+impl FromStr for Range {
+    type Err = ParseIntError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let vals: Vec<&str> = s.split("-").collect();
+        Ok(Range {
+            start: vals[0].parse::<u64>()?,
+            end: vals[1].parse::<u64>()?,
+        })
     }
 }
