@@ -38,21 +38,19 @@ struct Spec {
 }
 
 #[derive(StructOpt, Debug, Serialize)]
-#[structopt(name = "smaller-edit", about = "Extract a small part of a file for editing, then
-            combine it again.")]
+#[structopt(name = "edit-chunks", about = "Split out chunks of a large file for editing,
+then put them back together again.")]
 enum Command {
-    #[structopt(name = "split")]
+    #[structopt(name = "split", about = "split a file")]
     Split {
         path: String,
         ranges: Vec<Range>,
     },
-    #[structopt(name = "combine")]
+    #[structopt(name = "combine", about = "combine a previously split file again")]
     Combine {
         spec: String,
     },
 }
-
-
 
 fn split(path: String, ranges: Vec<Range>) {
 
