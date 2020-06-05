@@ -7,7 +7,7 @@ keywords = ["file"]
 categories = ["command-line-utilities"]
 homepage = "https://github.com/djc/edit-chunks"
 repository = "https://github.com/djc/edit-chunks"
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 readme = "README.md"
 edition = "2018"
 
