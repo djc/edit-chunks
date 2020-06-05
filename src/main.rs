@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate serde_derive;
-
 use std::cmp::min;
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom, Write};
@@ -8,6 +5,7 @@ use std::iter;
 use std::num::ParseIntError;
 use std::str::FromStr;
 
+use serde::{Deserialize, Serialize};
 use structopt::StructOpt;
 
 fn main() {
