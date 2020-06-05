@@ -1,7 +1,5 @@
 #[macro_use]
 extern crate serde_derive;
-#[macro_use]
-extern crate structopt_derive;
 
 use std::cmp::min;
 use std::fs::File;
