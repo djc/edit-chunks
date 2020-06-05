@@ -1,6 +1,6 @@
 [package]
 name = "edit-chunks"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Dirkjan Ochtman <dirkjan@ochtman.nl>"]
 description = "Split out chunks of a large file for editing, then put them back together again"
 keywords = ["file"]
