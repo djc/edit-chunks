@@ -23,22 +23,19 @@ fn main() {
 }
 
 #[derive(StructOpt, Debug, Serialize)]
-#[structopt(name = "edit-chunks", about = "Split out chunks of a large file for editing,
-then put them back together again.")]
+#[structopt(
+    name = "edit-chunks",
+    about = "Split out chunks of a large file for editing,
+then put them back together again."
+)]
 enum Command {
     #[structopt(name = "split", about = "split a file")]
-    Split {
-        path: String,
-        ranges: Vec<Range>,
-    },
+    Split { path: String, ranges: Vec<Range> },
     #[structopt(name = "combine", about = "combine a previously split file again")]
-    Combine {
-        spec: String,
-    },
+    Combine { spec: String },
 }
 
 fn split(path: String, ranges: Vec<Range>) {
-
     let mut spec_file_name = path.clone();
     spec_file_name.push_str(".spec");
     eprintln!("writing specification to {:?}...", &spec_file_name);
@@ -52,7 +49,10 @@ fn split(path: String, ranges: Vec<Range>) {
     for (i, &Range { start, end }) in spec.ranges.iter().enumerate() {
         set_file_name(&mut part_file_name, &spec.path, i);
         resize_buffer(&mut buf, (end - start) as usize);
-        eprintln!("writing bytes {}-{} to file {:?}...", start, end, part_file_name);
+        eprintln!(
+            "writing bytes {}-{} to file {:?}...",
+            start, end, part_file_name
+        );
         let mut part_file = File::create(&part_file_name).unwrap();
         in_file.seek(SeekFrom::Start(start)).unwrap();
         in_file.read(&mut buf).unwrap();
@@ -63,7 +63,6 @@ fn split(path: String, ranges: Vec<Range>) {
 }
 
 fn combine(spec_file_name: String) {
-
     let spec_file = File::open(&spec_file_name).unwrap();
     let spec: Spec = serde_json::from_reader(spec_file).unwrap();
 
@@ -71,7 +70,10 @@ fn combine(spec_file_name: String) {
     let mut last = 0;
     for (i, &Range { start, end }) in spec.ranges.iter().enumerate() {
         if start > last {
-            new_ranges.push(Provenance::Old(Range { start: last, end: start }));
+            new_ranges.push(Provenance::Old(Range {
+                start: last,
+                end: start,
+            }));
         }
         new_ranges.push(Provenance::New(i, Range { start, end }));
         last = end;
@@ -79,7 +81,10 @@ fn combine(spec_file_name: String) {
 
     let mut in_file = File::open(&spec.path).unwrap();
     let file_len = in_file.metadata().unwrap().len();
-    new_ranges.push(Provenance::Old(Range { start: last, end: file_len }));
+    new_ranges.push(Provenance::Old(Range {
+        start: last,
+        end: file_len,
+    }));
     let mut out_file_name = spec.path.clone();
     out_file_name.push_str(".new");
 
@@ -98,12 +103,14 @@ fn combine(spec_file_name: String) {
                     resize_buffer(&mut buf, next_chunk);
                     in_file.read(&mut buf).unwrap();
                     out_file.write(&buf).unwrap();
-                    eprintln!("copying {} bytes from {} (chunk {}/{})...", next_chunk,
-                              &spec.path, idx, chunks);
+                    eprintln!(
+                        "copying {} bytes from {} (chunk {}/{})...",
+                        next_chunk, &spec.path, idx, chunks
+                    );
                     remaining -= next_chunk;
                     idx += 1;
                 }
-            },
+            }
             Provenance::New(idx, Range { start, end }) => {
                 set_file_name(&mut part_file_name, &spec.path, idx);
                 let mut part_file = File::open(&part_file_name).unwrap();
@@ -120,9 +127,12 @@ fn combine(spec_file_name: String) {
                     format!("-{} bytes", old_len - new_len)
                 };
 
-                eprintln!("copying {} bytes from {} ({})...", new_len, &part_file_name, diff_str);
+                eprintln!(
+                    "copying {} bytes from {} ({})...",
+                    new_len, &part_file_name, diff_str
+                );
                 out_file.write(&buf).unwrap();
-            },
+            }
         }
     }
 
